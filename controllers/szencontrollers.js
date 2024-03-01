@@ -379,10 +379,10 @@ exports.deleteMoodLog = (req, res) => {
   });
 };
 
-//UPDATED FUNCTION : supports API
+//Supports API
 exports.getLogger = (req, res) => {
   //load the emotions and triggers from the database
-  const selectSQL = 'SELECT * FROM emotion; SELECT * FROM emotrigger';
+  const selectSQL = 'SELECT * FROM emotrigger';
   conn.query(selectSQL, (err, rows) => {
     if (err) {
       res.status(500);
@@ -391,13 +391,11 @@ exports.getLogger = (req, res) => {
         message: err
       });
     } else {
-      const selectemotions = rows[0];//selectemotions is an array that will be used to store the emotions
-      const selecttriggers = rows[1];//selecttriggers is an array that will be used to store the triggers
+      const selecttriggers = rows;//selecttriggers is an array that will be used to store the triggers
       res.status(200);
       res.json({
         status: 'success',
         message: 'Data retrieved',
-        selectemotions: selectemotions,
         selecttriggers: selecttriggers
       });
     }

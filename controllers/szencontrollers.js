@@ -417,49 +417,62 @@ exports.getChart = (req, res) => {
         message: err
       });
     } else {
-      if (averages[0].avg_enjoyment === null) {
-        res.status(404);
-        res.json({
-          status: 'failure',
-          message: 'No data found',
-          chartinput: averages[0],
-          charttriggers: [],
-          chartempty: true
-        });
-      } else {
-          const triggersSQL = 'SELECT emotrigger.emotrigger_name, AVG(emotion_log.enjoyment) AS avg_enjoyment, AVG(emotion_log.sadness) AS avg_sadness, AVG(emotion_log.anger) AS avg_anger, AVG(emotion_log.contempt) AS avg_contempt, AVG(emotion_log.disgust) AS avg_disgust, AVG(emotion_log.fear) AS avg_fear, AVG(emotion_log.surprise) AS avg_surprise FROM emotion_log INNER JOIN emotrigger_emotion_log ON emotion_log.emotion_log_id = emotrigger_emotion_log.emotion_log_id INNER JOIN emotrigger ON emotrigger_emotion_log.emotrigger_id = emotrigger.emotrigger_id GROUP BY emotrigger.emotrigger_name';
-          conn.query(triggersSQL, (err, triggers) => {
-          if (err) {
-            res.status(500);
-            res.json({
-              status: 'failure',
-              message: err
-            });
-      } else {
-        if (triggers.length === 0) {
+        if (averages[0].avg_enjoyment === null) {
           res.status(404);
           res.json({
             status: 'failure',
             message: 'No data found',
             chartinput: averages[0],
             charttriggers: [],
+            charttime: [],
             chartempty: true
           });
-      } else {
-        res.status(200);
-        res.json({
-          status: 'success',
-          message: 'Data retrieved',
-          chartinput: averages[0],
-          charttriggers: triggers,
-          chartempty: false
-        });
+        } else {
+            const triggersSQL = 'SELECT emotrigger.emotrigger_name, AVG(emotion_log.enjoyment) AS avg_enjoyment, AVG(emotion_log.sadness) AS avg_sadness, AVG(emotion_log.anger) AS avg_anger, AVG(emotion_log.contempt) AS avg_contempt, AVG(emotion_log.disgust) AS avg_disgust, AVG(emotion_log.fear) AS avg_fear, AVG(emotion_log.surprise) AS avg_surprise FROM emotion_log INNER JOIN emotrigger_emotion_log ON emotion_log.emotion_log_id = emotrigger_emotion_log.emotion_log_id INNER JOIN emotrigger ON emotrigger_emotion_log.emotrigger_id = emotrigger.emotrigger_id GROUP BY emotrigger.emotrigger_name';
+            conn.query(triggersSQL, (err, triggers) => {
+            if (err) {
+              res.status(500);
+              res.json({
+                status: 'failure',
+                message: err
+              });
+        } else {
+          if (triggers.length === 0) {
+            res.status(404);
+            res.json({
+              status: 'failure',
+              message: 'No data found',
+              chartinput: averages[0],
+              charttriggers: [],
+              charttime: [],
+              chartempty: true
+            });
+        } else {
+          const timeEmotions = 'SELECT time_stamp, enjoyment, sadness, anger, contempt, disgust, fear, surprise FROM emotion_log WHERE user_id=?';
+          conn.query(timeEmotions, id, (err, timeEmotions) => {
+          if (err) {
+            res.status(500);
+            res.json({
+              status: 'failure',
+              message: err
+            });
+          } else {
+            res.status(200);
+            res.json({
+              status: 'success',
+              message: 'Data retrieved',
+              chartinput: averages[0],
+              charttriggers: triggers,
+              charttime: timeEmotions,
+              chartempty: false
+            });
+          }
         }
-     }
-    });
+        );
       }
     }
   });
-  
-
+}
+}
+})
 };
